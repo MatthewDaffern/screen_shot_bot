@@ -6,9 +6,7 @@ I'm trying to make it as light as possible, so I can upload it to cloud-formatio
 
 #How are you going to track changes?
 
-I am going to try capture state changes in a website. I was going to hash the page, but that failed suprisingly fast in testing.
-
-Right now I'm looking into creating image renders of the page and hashing those, but I'm not too sure.
+So, I'll probably use selenium to take a screenshot with something like serverless chrome.
 
 #How do I use it?
 
