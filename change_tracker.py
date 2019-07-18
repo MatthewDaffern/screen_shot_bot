@@ -23,84 +23,74 @@ def screenshot_string_return(configured_driver_input, website):
     result = configured_driver_input.get_screenshot_as_base64()
     return result
 
-def configured_screen_shot_func(driver_input):
-    screenshot_func = partial(screenshot_string_return, website=website_from_config('config.json'))
-    return screenshot_func(driver_input)
+def configured_screen_shot_func(website):
+    screenshot_func = partial(screenshot_string_return, configured_driver_input=webdriver())
+    return screenshot_func(website)
 
-def screenshot():
-    return configured_screen_shot_func(webdriver())
+def screenshot(website_input):
+    return configured_screen_shot_func(website_input)
 
 
 # ========================================================================================
 # Use these functions to check the website screenshot.
 
-
+def hash_to_check(file_name_import):
+    json_file = open(file_name_import, "r+")
+    loaded_dict = json.load(json_file)
+    return loaded_dict['website_hash']
 
 #good
 def digest_returner(object_input):
     hash_object = sha3_512(str.encode(object_input))
     return hash_object.hexdigest()
 
-#good
-def website_text_getter(str_input):
-    website = requests.get(str_input)
-    return website.text
-
-#good
 def checker(hash_one, hash_two):
     if hash_one == hash_two:
         return False
     else:
         return True
-# ========================================================================================
 
-#good
+
+
+def website_checker(config_file_dict):
+    result = digest_returner(screenshot(config_file_dict['website']))
+    hash_object = config_file_dict['website_hash']
+    hash_check_partial = partial(checker, hash_two=hash_object)
+    if hash_check_partial(result):
+        return config_file_dict['website']
+    else:
+        return None
+
+
+
+def none_type_try_catch(check_input, function):
+    if type(check_input) == None:
+        return None
+    else:
+        function(check_input)
+
+
 def fold(func_list, input_object):
     variable_holder = str()
     for i in func_list:
         variable_holder = i(input_object)
     return variable_holder
 
-# ========================================================================================
-# config loading section
 
 
 
-#good
-def website_from_config(file_name_import):
-    json_file = open(file_name_import, "r+")
-    loaded_dict = json.load(json_file)
-    return loaded_dict['website']
 
 
-#good
-def hash_to_check(file_name_import):
-    json_file = open(file_name_import, "r+")
-    loaded_dict = json.load(json_file)
-    return loaded_dict['website_hash']
 
 
-#good
 def config_grabber(file_name_import):
     json_file = open(file_name_import, "r+")
     loaded_dict = json.load(json_file)
     return loaded_dict
 # ========================================================================================
-# Checks the website for change
-def checking_function(file_name_import):
-    hash_check = partial(checker, hash_two=hash_to_check(file_name_import))
-    #rewrite this to support selenium
-    func_list = [website_text_getter, digest_returner, hash_check]
-    website = website_from_config('config.json')
-    is_changed = fold(func_list, website)
-    if is_changed == True:
-        return website
+
 # Catches a None Type that might be returned from the above
-def none_type_try_catch(check_input, function):
-    if type(check_input) == None:
-        return None
-    else:
-        function(check_input)
+
 
 # ========================================================================================
 # Server creation and SMTP message generation
@@ -133,10 +123,11 @@ def send_message(config_input, mail_message_input):
 
 # ========================================================================================
 # main()
-def main():
-    configured_smtp = partial(send_message, config_input=config_grabber('email.json'))
-    none_type_try_catch(checking_function('config.json'), message_creator)
-
+def main(email_config, web_config):
+    configured_smtp = partial(send_message, config_input=config_grabber(email_config))
+    function_list = [config_grabber, website_checker]
+    none_type_try_catch(fold(function_list, web_config), message_creator)
+    
 
 if __name__=="__main__":
-    main()
+    main('email.json', 'config.json')
