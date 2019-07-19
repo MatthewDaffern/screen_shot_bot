@@ -51,7 +51,6 @@ def checker(hash_one, hash_two):
         return True
 
 
-
 def website_checker(config_file_dict):
     result = digest_returner(screenshot(config_file_dict['website']))
     hash_object = config_file_dict['website_hash']
@@ -60,7 +59,6 @@ def website_checker(config_file_dict):
         return config_file_dict['website']
     else:
         return None
-
 
 
 def none_type_try_catch(check_input, function):
@@ -75,11 +73,6 @@ def fold(func_list, input_object):
     for i in func_list:
         variable_holder = i(input_object)
     return variable_holder
-
-
-
-
-
 
 
 
